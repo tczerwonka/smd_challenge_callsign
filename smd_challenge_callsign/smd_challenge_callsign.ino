@@ -9,66 +9,127 @@
 */
 
 
-int LEDS[] = {0, 1, 2, 3, 4};
-bool STATES[] = {true, true, true, true, true};
-
-
-// Pins are different between Arduino and Attiny
-#if defined(__AVR_ATtiny85__)
-#define ARDUINO 0
-#define ledPin 0
-#define lightPin 3    // CdS or pushbutton hooked from PB4 (Pin 3, A2/D4) to ground
-#define lightPullUp 3
-#define touchPin 1
-#define touchPullUp 2
-#else
-#define ARDUINO 1
-#define ledPin 9  // RGB red
-#define lightPin A1
-#define lightPullUp A1
-#define touchPin A3
-#define touchPullUp A3
-#endif
+// this code is not at all clever, but it got the job done in less than an hour.
+// T Czerwonka WO9U
+// 24 Feb 2018
+// https://github.com/tczerwonka/smd_challenge_callsign
 
 //intra char delay
-int ict = 300;
+int ict = 2;
 //intra element timing
-int iet = 75;
+int iet = 8;
 //dit length
-int ditlen = 200;
-int dahlen = 200;
+int ditlen = 2;
+int dahlen = 10;
+int factor = 190;
 
 
 void setup() {
-  for (int LED = 0; LED < (sizeof(LEDS) / sizeof(int)); LED++) {
-    pinMode(LEDS[LED], OUTPUT);
-    digitalWrite(LEDS[LED], STATES[LED]);
+  for (int LED = 0; LED < 5; LED++) {
+    pinMode(LED, OUTPUT);
+    digitalWrite(LED, LOW);
   }
 }
 
+
+
+
 void loop() {
 
-  all_off();
+  throb(0, 5);
+  delay(8000);
+  roll();
+  roll();
+  roll();
+  roll();
+  roll();
+  //fade();
+  //fade();
+  delay(8000);
+
   de(0);
+  delay(2000);
   w(1);
   o(2);
   nine(3);
   u(4);
+  delay(8000);
+
 }
 
+
+
+
+void throb(int led, int times) {
+  for (int repeat = 0; repeat < times; repeat++) {
+    for (int br = 0; br < 255; br++) {
+      analogWrite(led, br);
+      delay(13);
+    }
+    for (int br = 254; br > 0; br--) {
+      analogWrite(led, br);
+      delay(15);
+    }
+    digitalWrite(led, LOW);
+    delay(1500);
+  }
+
+}
+
+
+
+void roll() {
+  for (int LED = 0; LED < 5; LED++) {
+    digitalWrite(LED, HIGH);
+    delay(500);
+    digitalWrite(LED, LOW);
+  }
+  for (int LED = 4; LED > -1; LED--) {
+    digitalWrite(LED, HIGH);
+    delay(500);
+    digitalWrite(LED, LOW);
+  }
+}
+
+void fade() {
+  for (int LED = 0; LED < 5; LED++) {
+    for (int br = 0; br < 255; br++) {
+      analogWrite(LED, br);
+      delay(1);
+    }
+    for (int br = 254; br > 0; br--) {
+      analogWrite(LED, br);
+      delay(1);
+    }
+    digitalWrite(LED, LOW);
+
+  }
+  for (int LED = 4; LED > -1; LED--) {
+    for (int br = 0; br < 255; br++) {
+      analogWrite(LED, br);
+      delay(1);
+    }
+    for (int br = 254; br > 0; br--) {
+      analogWrite(LED, br);
+      delay(1);
+    }
+    delay(100);
+    analogWrite(LED, 0);
+  }
+}
 
 void w(int el) {
   dit(el);
   dah(el);
   dah(el);
-  delay(ict);
+  delay(ict * factor);
 }
 
 void o(int el) {
   dah(el);
   dah(el);
   dah(el);
-  delay(ict);
+  delay(ict * factor);
 }
 
 void nine(int el) {
@@ -77,46 +138,38 @@ void nine(int el) {
   dah(el);
   dah(el);
   dit(el);
-  delay(ict);
+  delay(ict * factor);
 }
 
 void u(int el) {
   dit(el);
   dit(el);
   dah(el);
-  delay(ict);
+  delay(ict * factor);
 }
 
 void de(int el) {
   dah(el);
   dit(el);
   dit(el);
-  delay(ict);
+  delay(ict * factor);
   dit(el);
-  delay(ict);
+  delay(ict * factor);
 
 }
 
-
-void all_off() {
-  digitalWrite(0, LOW);
-  digitalWrite(1, LOW);
-  digitalWrite(2, LOW);
-  digitalWrite(3, LOW);
-  digitalWrite(4, LOW);
-}
 
 void dit(int pin) {
   digitalWrite(pin, HIGH);
-  delay(ditlen);
+  delay(ditlen * factor);
   digitalWrite(pin, LOW);
-  delay(iet);
+  delay(iet * factor);
 }
 
 
 void dah(int pin) {
   digitalWrite(pin, HIGH);
-  delay(dahlen);
+  delay(dahlen * factor);
   digitalWrite(pin, LOW);
-  delay(iet);
+  delay(iet * factor);
 }
